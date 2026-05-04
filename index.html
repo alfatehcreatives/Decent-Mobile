@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decent Mobile and repair</title>
+    <!-- Manifest Placeholder -->
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            overflow-x: hidden;
+        }
+
+        .premium-card {
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .dark-card {
+            background: #0f172a;
+            color: #ffffff;
+            border-radius: 32px;
+            border: 1px solid #1e293b;
+        }
+
+        .tab-active {
+            color: #ffffff;
+            background: #0f172a;
+            border-radius: 9999px;
+        }
+
+        .pill-nav-container {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 400px;
+            background: #0f172a;
+            padding: 10px 16px;
+            border-radius: 9999px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            color: rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 9999px;
+        }
+
+        .nav-item.active {
+            color: #ffffff;
+            background: rgba(255,255,255,0.1);
+        }
+
+        input, select {
+            border-radius: 9999px !important;
+            border: 1px solid #e2e8f0 !important;
+            padding: 14px 24px !important;
+            width: 100%;
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        input:focus {
+            border-color: #0f172a !important;
+        }
+
+        .btn-pill {
+            border-radius: 9999px;
+            transition: transform 0.1s;
+        }
+
+        .btn-pill:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body class="pb-36">
+
+    <div class="max-w-6xl mx-auto px-4 md:px-8">
+        
+        <header class="py-10 flex justify-between items-center">
+            <div>
+                <p class="text-xs text-slate-400 font-bold uppercase tracking-tighter">Alfateh Creative Agency</p>
+                <h1 class="text-4xl font-black tracking-tight text-slate-900">DECENT<span class="text-slate-400">MOBILE</span></h1>
+            </div>
+            <button onclick="downloadCurrentSectionPDF()" class="w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center hover:opacity-90 transition-all shadow-xl">
+                <i class="fa-solid fa-file-pdf text-xl"></i>
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <aside class="lg:col-span-4 space-y-6">
+                <!-- Assets remains Black as requested -->
+                <div class="dark-card p-8 relative overflow-hidden shadow-2xl">
+                    <div class="relative z-10">
+                        <p class="text-xs font-bold uppercase opacity-60">Total Assets</p>
+                        <div class="flex items-end gap-2 mt-2">
+                            <span class="text-5xl font-black tracking-tighter" id="total-assets">0</span>
+                        </div>
+                        
+                        <div class="space-y-3 mt-8">
+                            <div class="flex justify-between items-center bg-white/10 p-4 rounded-[24px]">
+                                <span class="text-[10px] font-bold uppercase opacity-50">Active Load</span>
+                                <span class="font-bold text-lg" id="sum-load">0</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-white/10 p-4 rounded-[24px]">
+                                <span class="text-[10px] font-bold uppercase opacity-50">Total Profit</span>
+                                <span class="font-bold text-lg" id="sum-profit">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="premium-card p-6">
+                    <div class="flex justify-between items-center text-xs font-bold uppercase text-slate-400">
+                        <span>Daily Activity</span>
+                        <span id="log-count" class="text-slate-900">0</span>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="lg:col-span-8 space-y-8">
+                
+                <div class="flex justify-center">
+                    <div class="flex p-2 bg-slate-200 rounded-full w-full max-w-lg border border-slate-300">
+                        <button onclick="switchTab('easyload')" id="tab-easyload" class="flex-1 py-3 text-xs font-bold tab-active transition-all">LOAD</button>
+                        <button onclick="switchTab('transactions')" id="tab-transactions" class="flex-1 py-3 text-xs font-bold text-slate-500 transition-all">PAYMENTS</button>
+                        <button onclick="switchTab('repairing')" id="tab-repairing" class="flex-1 py-3 text-xs font-bold text-slate-500 transition-all">REPAIR</button>
+                    </div>
+                </div>
+
+                <!-- 1. Easyload Section -->
+                <section id="sec-easyload" class="space-y-6">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div class="premium-card p-5 text-center border-b-4 border-red-500">
+                            <p class="text-[9px] font-black text-slate-400 uppercase">Jazz</p>
+                            <p class="text-xl font-black" id="bal-jazz">0</p>
+                        </div>
+                        <div class="premium-card p-5 text-center border-b-4 border-blue-500">
+                            <p class="text-[9px] font-black text-slate-400 uppercase">Telenor</p>
+                            <p class="text-xl font-black" id="bal-telenor">0</p>
+                        </div>
+                        <div class="premium-card p-5 text-center border-b-4 border-orange-500">
+                            <p class="text-[9px] font-black text-slate-400 uppercase">Ufone</p>
+                            <p class="text-xl font-black" id="bal-ufone">0</p>
+                        </div>
+                        <div class="premium-card p-5 text-center border-b-4 border-green-500">
+                            <p class="text-[9px] font-black text-slate-400 uppercase">Zong</p>
+                            <p class="text-xl font-black" id="bal-zong">0</p>
+                        </div>
+                    </div>
+
+                    <div class="premium-card p-8 space-y-6">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-black text-xl">New Load Sale</h3>
+                            <button onclick="toggleDeposit()" class="bg-slate-900 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all">+ Refill</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <select id="load-company">
+                                <option value="Jazz">Jazz</option>
+                                <option value="Telenor">Telenor</option>
+                                <option value="Ufone">Ufone</option>
+                                <option value="Zong">Zong</option>
+                            </select>
+                            <input type="text" id="load-info" placeholder="Phone / Name">
+                            <input type="number" id="load-amount" placeholder="Amount">
+                        </div>
+                        <button onclick="addEasyload()" class="w-full bg-slate-900 text-white py-5 rounded-full font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl btn-pill">Confirm Transaction</button>
+                    </div>
+                    <div id="easyload-list" class="space-y-4"></div>
+                </section>
+
+                <!-- 2. Transactions Section -->
+                <section id="sec-transactions" class="hidden space-y-6">
+                    <div class="premium-card p-8 space-y-6">
+                        <h3 class="font-black text-xl text-slate-900">Payment Transfer</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <select id="trans-type">
+                                <option value="EasyPaisa">EasyPaisa</option>
+                                <option value="JazzCash">JazzCash</option>
+                                <option value="Bank">Bank Transfer</option>
+                            </select>
+                            <input type="text" id="trans-name" placeholder="Receiver Title">
+                            <input type="number" id="trans-amount" placeholder="Amount">
+                            <input type="number" id="trans-fee" placeholder="Service Fee (Profit)">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="addTransaction('Deposit')" class="bg-emerald-600 text-white py-5 rounded-full font-black text-xs uppercase tracking-widest btn-pill">Deposit</button>
+                            <button onclick="addTransaction('Withdraw')" class="bg-rose-600 text-white py-5 rounded-full font-black text-xs uppercase tracking-widest btn-pill">Withdraw</button>
+                        </div>
+                    </div>
+                    <div id="transactions-list" class="space-y-4"></div>
+                </section>
+
+                <!-- 3. Repairing Section -->
+                <section id="sec-repairing" class="hidden space-y-6">
+                    <div class="premium-card p-8 space-y-6">
+                        <h3 class="font-black text-xl text-slate-900">Repairing Order</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="rep-name" placeholder="Customer Name">
+                            <input type="text" id="rep-fault" placeholder="Repair Fault">
+                            <input type="number" id="rep-payment" placeholder="Customer Payment">
+                            <input type="number" id="rep-cost" placeholder="Spares Cost">
+                        </div>
+                        <button onclick="addRepair()" class="w-full bg-slate-900 text-white py-5 rounded-full font-black text-sm uppercase tracking-widest btn-pill">Close Job</button>
+                    </div>
+                    <div id="repairing-list" class="space-y-4"></div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="pill-nav-container">
+        <div class="nav-item active" id="nav-easyload" onclick="switchTab('easyload')">
+            <i class="fa-solid fa-bolt-lightning text-lg"></i>
+            <span class="text-[8px] font-black uppercase tracking-tighter">Load</span>
+        </div>
+        <div class="nav-item" id="nav-transactions" onclick="switchTab('transactions')">
+            <i class="fa-solid fa-wallet text-lg"></i>
+            <span class="text-[8px] font-black uppercase tracking-tighter">Bank</span>
+        </div>
+        <div class="nav-item" id="nav-repairing" onclick="switchTab('repairing')">
+            <i class="fa-solid fa-tools text-lg"></i>
+            <span class="text-[8px] font-black uppercase tracking-tighter">Repair</span>
+        </div>
+    </div>
+
+    <!-- Refill Modal -->
+    <div id="modal-deposit" class="fixed inset-0 bg-slate-900/40 hidden items-center justify-center p-6 z-[200] backdrop-blur-sm">
+        <div class="premium-card p-10 w-full max-w-sm space-y-6">
+            <h2 class="text-2xl font-black text-center text-slate-900">Refill Wallet</h2>
+            <div class="space-y-4">
+                <select id="dep-company">
+                    <option value="Jazz">Jazz</option>
+                    <option value="Telenor">Telenor</option>
+                    <option value="Ufone">Ufone</option>
+                    <option value="Zong">Zong</option>
+                </select>
+                <input type="number" id="dep-amount" placeholder="Deposit Amount">
+            </div>
+            <div class="flex flex-col gap-3">
+                <button onclick="saveDeposit()" class="w-full py-4 bg-slate-900 text-white rounded-full font-black uppercase text-xs tracking-widest btn-pill">Confirm Refill</button>
+                <button onclick="toggleDeposit()" class="w-full py-2 text-slate-400 font-bold text-xs uppercase btn-pill">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW failed', err));
+            });
+        }
+
+        let wallets = { Jazz: 0, Telenor: 0, Ufone: 0, Zong: 0 };
+        let history = { easyload: [], transactions: [], repairing: [] };
+        let stats = { profit: 0 };
+        let currentActiveTab = 'easyload';
+
+        function switchTab(tab) {
+            currentActiveTab = tab;
+            ['easyload', 'transactions', 'repairing'].forEach(t => {
+                document.getElementById(`sec-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).className = 'flex-1 py-3 text-xs font-bold text-slate-500 transition-all';
+                document.getElementById(`nav-${t}`).classList.remove('active');
+            });
+            document.getElementById(`sec-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).className = 'flex-1 py-3 text-xs font-bold tab-active transition-all';
+            document.getElementById(`nav-${tab}`).classList.add('active');
+        }
+
+        function updateUI() {
+            let totalWalletLoad = 0;
+            for (let key in wallets) {
+                document.getElementById(`bal-${key.toLowerCase()}`).innerText = wallets[key];
+                totalWalletLoad += wallets[key];
+            }
+            document.getElementById('sum-load').innerText = totalWalletLoad;
+            document.getElementById('sum-profit').innerText = stats.profit;
+            document.getElementById('total-assets').innerText = totalWalletLoad + stats.profit;
+            document.getElementById('log-count').innerText = history.easyload.length + history.transactions.length + history.repairing.length;
+            renderLists();
+        }
+
+        function renderLists() {
+            document.getElementById('easyload-list').innerHTML = history.easyload.map(item => `
+                <div class="premium-card p-6 flex justify-between items-center">
+                    <div>
+                        <p class="font-black text-slate-800">${item.info}</p>
+                        <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">${item.company} • ${item.date}</p>
+                    </div>
+                    <p class="font-black text-2xl text-slate-900">${item.amount}</p>
+                </div>
+            `).reverse().join('');
+
+            document.getElementById('transactions-list').innerHTML = history.transactions.map(item => `
+                <div class="premium-card p-6 flex justify-between items-center">
+                    <div>
+                        <p class="font-black text-slate-800">${item.name}</p>
+                        <p class="text-[9px] text-slate-400 font-black uppercase">${item.platform} • ${item.type} • ${item.date}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-black text-2xl ${item.type === 'Deposit' ? 'text-emerald-600' : 'text-rose-600'}">
+                            ${item.type === 'Deposit' ? '+' : '-'}${item.amount}
+                        </p>
+                        ${item.fee > 0 ? `<p class="text-[9px] font-black text-emerald-600 uppercase tracking-tighter">Profit: ${item.fee}</p>` : ''}
+                    </div>
+                </div>
+            `).reverse().join('');
+
+            document.getElementById('repairing-list').innerHTML = history.repairing.map(item => `
+                <div class="premium-card p-8 space-y-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-black text-slate-800 text-xl">${item.name}</p>
+                            <p class="text-[9px] text-slate-400 font-black uppercase">${item.date}</p>
+                        </div>
+                        <div class="bg-emerald-100 px-4 py-1 rounded-full"><p class="text-[10px] text-emerald-600 font-black uppercase">Profit: ${item.profit}</p></div>
+                    </div>
+                    <div class="bg-slate-50 p-5 rounded-[24px] text-sm font-medium text-slate-600 border border-slate-100">${item.fault}</div>
+                    <div class="flex justify-between items-center pt-2">
+                        <span class="text-[10px] text-slate-400 font-black uppercase">Total Bill</span>
+                        <span class="font-black text-2xl text-slate-900">${item.payment}</span>
+                    </div>
+                </div>
+            `).reverse().join('');
+        }
+
+        function downloadCurrentSectionPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(22);
+            doc.text("Decent Mobile POS", 14, 20);
+            doc.setFontSize(10);
+            doc.text(`REPORT: ${currentActiveTab.toUpperCase()}`, 14, 28);
+
+            let data = [];
+            let headers = [];
+
+            if (currentActiveTab === 'easyload') {
+                headers = [["Company", "Info", "Amount", "Date"]];
+                data = history.easyload.map(i => [i.company, i.info, i.amount, i.date]);
+            } else if (currentActiveTab === 'transactions') {
+                headers = [["Platform", "Name", "Amount", "Fee", "Type", "Date"]];
+                data = history.transactions.map(i => [i.platform, i.name, i.amount, i.fee, i.type, i.date]);
+            } else if (currentActiveTab === 'repairing') {
+                headers = [["Customer", "Fault", "Bill", "Profit", "Date"]];
+                data = history.repairing.map(i => [i.name, i.fault, i.payment, i.profit, i.date]);
+            }
+
+            doc.autoTable({
+                head: headers,
+                body: data,
+                startY: 35,
+                theme: 'striped',
+                headStyles: { fillColor: [15, 23, 42] }
+            });
+
+            doc.text("Made by Alfateh Creative Agency", 14, doc.lastAutoTable.finalY + 10);
+            doc.save(`decent_${currentActiveTab}_report.pdf`);
+        }
+
+        function getTimestamp() {
+            const now = new Date();
+            return now.toLocaleDateString() + ' • ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function addEasyload() {
+            const company = document.getElementById('load-company').value;
+            const info = document.getElementById('load-info').value;
+            const amount = parseInt(document.getElementById('load-amount').value);
+            if (!info || isNaN(amount)) return;
+            wallets[company] -= amount;
+            history.easyload.push({ company, info, amount, date: getTimestamp() });
+            document.getElementById('load-info').value = '';
+            document.getElementById('load-amount').value = '';
+            updateUI();
+        }
+
+        function toggleDeposit() { document.getElementById('modal-deposit').classList.toggle('hidden'); document.getElementById('modal-deposit').classList.toggle('flex'); }
+
+        function saveDeposit() {
+            const company = document.getElementById('dep-company').value;
+            const amount = parseInt(document.getElementById('dep-amount').value);
+            if (isNaN(amount)) return;
+            wallets[company] += amount;
+            document.getElementById('dep-amount').value = '';
+            toggleDeposit();
+            updateUI();
+        }
+
+        function addTransaction(type) {
+            const platform = document.getElementById('trans-type').value;
+            const name = document.getElementById('trans-name').value;
+            const amount = parseInt(document.getElementById('trans-amount').value);
+            const fee = parseInt(document.getElementById('trans-fee').value) || 0;
+            if (!name || isNaN(amount)) return;
+            stats.profit += fee;
+            history.transactions.push({ platform, name, amount, fee, type, date: getTimestamp() });
+            ['trans-name', 'trans-amount', 'trans-fee'].forEach(id => document.getElementById(id).value = '');
+            updateUI();
+        }
+
+        function addRepair() {
+            const name = document.getElementById('rep-name').value;
+            const fault = document.getElementById('rep-fault').value;
+            const payment = parseInt(document.getElementById('rep-payment').value) || 0;
+            const cost = parseInt(document.getElementById('rep-cost').value) || 0;
+            if (!name || !fault) return;
+            const profit = payment - cost;
+            stats.profit += profit;
+            history.repairing.push({ name, fault, payment, cost, profit, date: getTimestamp() });
+            ['rep-name', 'rep-fault', 'rep-payment', 'rep-cost'].forEach(id => document.getElementById(id).value = '');
+            updateUI();
+        }
+
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
